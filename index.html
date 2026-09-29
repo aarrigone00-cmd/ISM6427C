@@ -2,94 +2,383 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Live weather for Boca Raton and beyond, powered by Open-Meteo." />
-  <meta name="theme-color" content="#f5f7fb" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
-  <title>Owl Weather</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛅</text></svg>" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="Owl Studio — turn any idea into a full song with Suno AI. Generate, extend, remix, split stems, make lyrics and music videos." />
+  <meta name="theme-color" content="#f7f5ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0d0b17" media="(prefers-color-scheme: dark)" />
+  <title>Owl Studio</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script>
-    // Apply saved theme before paint to avoid a flash
+    // Apply the saved theme before first paint to avoid a flash
     try {
-      var t = localStorage.getItem('theme');
+      var t = localStorage.getItem('owlstudio.theme');
       if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
     } catch (e) {}
   </script>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to content</a>
+
   <header class="topbar">
-    <div class="brand">
-      <span class="logo" aria-hidden="true">⛅</span>
-      <span>Owl Weather</span>
-    </div>
-    <div class="theme-switch" role="radiogroup" aria-label="Theme">
-      <button type="button" role="radio" data-theme-choice="light" title="Light theme">☀️<span class="sr">Light</span></button>
-      <button type="button" role="radio" data-theme-choice="dark" title="Dark theme">🌙<span class="sr">Dark</span></button>
-      <button type="button" role="radio" data-theme-choice="system" title="System theme">💻<span class="sr">System</span></button>
+    <a class="brand" href="#" data-go="create" aria-label="Owl Studio home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M9 18V6l11-2v12" opacity=".35"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/><path d="M9 18V6l11-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      <span class="brand-name">Owl&nbsp;Studio</span>
+    </a>
+
+    <div class="topbar-right">
+      <button type="button" id="credits-pill" class="pill" hidden title="Remaining credits — click to refresh">
+        <span aria-hidden="true">🪙</span> <span id="credits-value">—</span><span class="sr"> credits</span>
+      </button>
+      <div class="theme-switch" role="radiogroup" aria-label="Theme">
+        <button type="button" role="radio" data-theme-choice="light" title="Light theme">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>
+          <span class="sr">Light</span>
+        </button>
+        <button type="button" role="radio" data-theme-choice="dark" title="Dark theme">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+          <span class="sr">Dark</span>
+        </button>
+        <button type="button" role="radio" data-theme-choice="system" title="Match system">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 20h8M12 16v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="sr">System</span>
+        </button>
+      </div>
+      <button type="button" id="key-btn" class="icon-btn" hidden title="API key &amp; settings" aria-label="API key and settings">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="8" cy="15" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 12l9-9M16 7l3 3M18 5l2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
   </header>
 
-  <main class="container">
-    <section class="greeting">
-      <h1 id="greeting">Hello, Angela!</h1>
-      <p>Hi, I'm <strong>Angela Arrigone</strong>, a student at <strong>FAU</strong>. Welcome to my weather app — here's what the sky is up to.</p>
+  <main id="main">
+    <!-- ============ KEY GATE ============ -->
+    <section id="gate" class="gate" aria-labelledby="gate-title">
+      <div class="gate-hero">
+        <div class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <h1 id="gate-title">Turn any idea into a <span class="grad">real song</span>.</h1>
+        <p class="lede">Describe a vibe, write your own lyrics, or remix your own recordings. Owl Studio drives the Suno AI music models — V6, V6 Wild and V6 Mini — right from your browser.</p>
+        <ul class="gate-steps">
+          <li><b>1</b><span>Grab an API key from <a href="https://sunoapi.org/api-key" target="_blank" rel="noopener">sunoapi.org</a></span></li>
+          <li><b>2</b><span>Paste it below to unlock the studio</span></li>
+          <li><b>3</b><span>Describe your song and hit <em>Create</em></span></li>
+        </ul>
+      </div>
+
+      <form id="key-form" class="card key-card" autocomplete="off">
+        <h2>Unlock the studio</h2>
+        <label class="field">
+          <span class="label">Suno API key</span>
+          <div class="input-row">
+            <input id="key-input" type="password" required minlength="8" placeholder="Paste your API key" spellcheck="false" autocomplete="off" aria-describedby="key-help" />
+            <button type="button" class="ghost small" id="key-toggle" aria-pressed="false">Show</button>
+          </div>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="key-remember" checked />
+          <span>Remember on this device</span>
+        </label>
+        <p id="key-help" class="hint">Your key stays in your browser and is only sent to the Suno API to run your requests. Untick “remember” to forget it when you close the tab.</p>
+        <p id="key-error" class="error" role="alert" hidden></p>
+        <button type="submit" class="primary big" id="key-submit">
+          <span class="btn-label">Enter the studio</span>
+        </button>
+        <p class="hint center">No key yet? <a href="https://sunoapi.org/api-key" target="_blank" rel="noopener">Get one here →</a></p>
+      </form>
+
+      <div class="feature-grid" aria-label="What you can do">
+        <div class="feature"><span>✨</span><b>Simple &amp; Custom</b><small>One-line ideas or full control over lyrics, style and structure</small></div>
+        <div class="feature"><span>🎚️</span><b>Pick your model</b><small>V6, V6 Wild, V6 Mini, plus legacy V4–V5.5</small></div>
+        <div class="feature"><span>🔁</span><b>Extend &amp; remix</b><small>Continue, cover, add vocals or instruments, mashups</small></div>
+        <div class="feature"><span>🎤</span><b>Karaoke &amp; stems</b><small>Synced lyrics, vocal / instrument separation, WAV</small></div>
+        <div class="feature"><span>✍️</span><b>Lyrics lab</b><small>Generate lyrics, then turn them into a song</small></div>
+        <div class="feature"><span>🎬</span><b>Videos &amp; art</b><small>Music videos and fresh cover art for your tracks</small></div>
+      </div>
     </section>
 
-    <form id="search-form" class="search" autocomplete="off">
-      <input id="search-input" type="search" placeholder="Search a city…" aria-label="Search a city" />
-      <button type="submit" class="btn">Search</button>
-      <button type="button" id="locate-btn" class="btn btn-ghost" title="Use my location">📍<span class="sr">Use my location</span></button>
-      <button type="button" id="home-btn" class="btn btn-ghost" title="Back to Boca Raton">🏠<span class="sr">Boca Raton</span></button>
-      <ul id="results" class="results" hidden></ul>
-    </form>
+    <!-- ============ STUDIO ============ -->
+    <section id="studio" class="studio" hidden>
+      <nav class="tabs" role="tablist" aria-label="Studio sections">
+        <button role="tab" id="tab-create" aria-controls="panel-create" data-tab="create" aria-selected="true">✨ Create</button>
+        <button role="tab" id="tab-lyrics" aria-controls="panel-lyrics" data-tab="lyrics" aria-selected="false">✍️ Lyrics</button>
+        <button role="tab" id="tab-remix" aria-controls="panel-remix" data-tab="remix" aria-selected="false">🔁 Remix</button>
+        <button role="tab" id="tab-sounds" aria-controls="panel-sounds" data-tab="sounds" aria-selected="false">🥁 Sounds</button>
+        <button role="tab" id="tab-library" aria-controls="panel-library" data-tab="library" aria-selected="false">🎧 Library <span class="badge" id="lib-count">0</span></button>
+      </nav>
 
-    <div id="status" class="status" role="status" aria-live="polite"></div>
-
-    <section id="current" class="card current" hidden>
-      <div class="current-head">
-        <div>
-          <h2 id="place-name">Boca Raton</h2>
-          <p id="place-sub" class="muted"></p>
+      <!-- CREATE -->
+      <div class="panel" id="panel-create" role="tabpanel" aria-labelledby="tab-create">
+        <div class="panel-head">
+          <div>
+            <h2>What should we make today?</h2>
+            <p class="muted">Each request creates <b>two</b> versions to choose from.</p>
+          </div>
+          <div class="seg" role="radiogroup" aria-label="Mode">
+            <button type="button" role="radio" data-mode="simple" aria-checked="true">Simple</button>
+            <button type="button" role="radio" data-mode="custom" aria-checked="false">Custom</button>
+          </div>
         </div>
-        <div class="unit-switch" role="radiogroup" aria-label="Units">
-          <button type="button" role="radio" data-unit="fahrenheit">°F</button>
-          <button type="button" role="radio" data-unit="celsius">°C</button>
+
+        <form id="create-form" class="create-grid" novalidate>
+          <div class="col-main">
+            <!-- Simple -->
+            <div class="card" data-show-mode="simple">
+              <label class="field">
+                <span class="label">Describe your song <span class="count" data-count-for="simple-prompt"></span></span>
+                <textarea id="simple-prompt" rows="4" maxlength="3000" placeholder="An upbeat summer anthem about road-tripping down the Florida coast with your best friends"></textarea>
+              </label>
+              <div class="row gap wrap">
+                <button type="button" class="ghost small" id="surprise-btn">🎲 Surprise me</button>
+                <span class="hint">Tip: mention mood, instruments, tempo and who's singing.</span>
+              </div>
+              <div class="field">
+                <span class="label">Pick a vibe <small class="muted">(at least one, or add a reference below)</small></span>
+                <div class="chips" id="vibe-chips"></div>
+              </div>
+              <details class="sub">
+                <summary>🖼️ Inspire it with a reference (image, audio or video)</summary>
+                <p class="hint">Suno can take its cue from a photo, a sound clip, or a short video. Upload a file or paste a public link.</p>
+                <div id="ref-fields"></div>
+              </details>
+            </div>
+
+            <!-- Custom -->
+            <div class="card" data-show-mode="custom" hidden>
+              <div class="grid-2">
+                <label class="field">
+                  <span class="label">Title <span class="count" data-count-for="c-title"></span></span>
+                  <input id="c-title" maxlength="80" placeholder="Midnight on Glades Road" />
+                </label>
+                <div class="field">
+                  <span class="label">Vocals</span>
+                  <div class="seg small" role="radiogroup" aria-label="Vocal gender" id="c-gender">
+                    <button type="button" role="radio" data-val="" aria-checked="true">Any</button>
+                    <button type="button" role="radio" data-val="f" aria-checked="false">Female</button>
+                    <button type="button" role="radio" data-val="m" aria-checked="false">Male</button>
+                  </div>
+                </div>
+              </div>
+
+              <label class="field">
+                <span class="label">Style of music <span class="count" data-count-for="c-style"></span></span>
+                <div class="input-row">
+                  <input id="c-style" maxlength="1000" placeholder="dreamy synth-pop, 110 bpm, breathy female vocals, lush pads" />
+                  <button type="button" class="ghost small" id="boost-btn" title="Let AI expand your style description">✨ Boost</button>
+                </div>
+              </label>
+              <div class="chips small" id="style-chips" aria-label="Add style tags"></div>
+
+              <div class="field" id="lyrics-field">
+                <div class="row between">
+                  <span class="label">Lyrics <span class="count" data-count-for="c-lyrics"></span></span>
+                  <div class="row gap">
+                    <button type="button" class="link" data-go="lyrics">✍️ Write with AI</button>
+                  </div>
+                </div>
+                <div class="tag-bar" aria-label="Insert section tag">
+                  <button type="button" data-tag="[Intro]">Intro</button>
+                  <button type="button" data-tag="[Verse]">Verse</button>
+                  <button type="button" data-tag="[Pre-Chorus]">Pre-Chorus</button>
+                  <button type="button" data-tag="[Chorus]">Chorus</button>
+                  <button type="button" data-tag="[Bridge]">Bridge</button>
+                  <button type="button" data-tag="[Outro]">Outro</button>
+                </div>
+                <textarea id="c-lyrics" rows="10" maxlength="5000" placeholder="[Verse]&#10;Streetlights hum a song I know&#10;&#10;[Chorus]&#10;..."></textarea>
+              </div>
+
+              <label class="field">
+                <span class="label">Exclude styles <small class="muted">(negative tags)</small></span>
+                <input id="c-negative" maxlength="1000" placeholder="heavy metal, autotune, spoken word" />
+              </label>
+
+              <details class="sub" id="finetune">
+                <summary>🎛️ Fine-tune (advanced)</summary>
+                <label class="check"><input type="checkbox" id="ft-on" /> <span>Use these controls</span></label>
+                <div class="ft-grid" id="ft-grid">
+                  <label class="slider"><span>Style weight <output id="o-sw">0.65</output></span><input type="range" id="ft-sw" min="0" max="1" step="0.01" value="0.65" /><small>How strictly to follow your style</small></label>
+                  <label class="slider"><span>Weirdness <output id="o-wd">0.50</output></span><input type="range" id="ft-wd" min="0" max="1" step="0.01" value="0.5" /><small>Safe ⟷ experimental</small></label>
+                  <label class="slider" id="aw-wrap"><span>Audio weight <output id="o-aw">0.65</output></span><input type="range" id="ft-aw" min="0" max="1" step="0.01" value="0.65" /><small>Weight of audio features (vocal songs only)</small></label>
+                  <label class="slider"><span>Variety <output id="o-va">Normal</output></span><input type="range" id="ft-va" min="0" max="4" step="1" value="1" /><small>Off · Normal · High · Extra · Max</small></label>
+                </div>
+                <div class="grid-2">
+                  <label class="field">
+                    <span class="label">Persona / Voice</span>
+                    <select id="c-persona"><option value="">None</option></select>
+                  </label>
+                  <label class="field">
+                    <span class="label">Or paste a Persona / Voice ID</span>
+                    <input id="c-persona-id" placeholder="persona_…" />
+                  </label>
+                </div>
+                <label class="field">
+                  <span class="label">Persona type</span>
+                  <select id="c-persona-model">
+                    <option value="style_persona">Style persona (from Generate Persona)</option>
+                    <option value="voice_persona">Voice persona (Suno Voice ID)</option>
+                  </select>
+                </label>
+              </details>
+            </div>
+          </div>
+
+          <aside class="col-side">
+            <div class="card">
+              <div class="field">
+                <span class="label">Model</span>
+                <div class="models" id="model-cards" role="radiogroup" aria-label="Model"></div>
+                <label class="check small"><input type="checkbox" id="show-legacy" /> <span>Show legacy models</span></label>
+              </div>
+              <label class="switch-row">
+                <span><b>Instrumental</b><small>No vocals</small></span>
+                <input type="checkbox" id="instrumental" role="switch" />
+              </label>
+              <div class="field" id="duration-wrap">
+                <label class="check"><input type="checkbox" id="dur-on" /> <span>Set a target length</span></label>
+                <label class="slider" id="dur-slider" hidden>
+                  <span>Length <output id="o-dur">2:00</output></span>
+                  <input type="range" id="dur" min="10" max="360" step="5" value="120" />
+                  <small>10 s – 6 min · V6-series &amp; V5.5, Custom mode</small>
+                </label>
+              </div>
+              <p id="create-error" class="error" role="alert" hidden></p>
+              <button type="submit" class="primary big block" id="create-btn">
+                <span class="btn-label">🎵 Create song</span>
+              </button>
+              <p class="hint center">Songs appear in your Library. Files are kept by Suno for 14 days — download your favourites.</p>
+            </div>
+          </aside>
+        </form>
+      </div>
+
+      <!-- LYRICS -->
+      <div class="panel" id="panel-lyrics" role="tabpanel" aria-labelledby="tab-lyrics" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Lyrics lab</h2>
+            <p class="muted">Describe a theme — get two sets of lyrics, then send your favourite straight into a song.</p>
+          </div>
+        </div>
+        <form id="lyrics-form" class="card">
+          <label class="field">
+            <span class="label">What are the lyrics about? <span class="count" data-count-for="lyrics-prompt"></span></span>
+            <textarea id="lyrics-prompt" rows="3" maxlength="200" required placeholder="A heartfelt song about finals week at FAU, coffee at 3am, and the feeling when it's finally over"></textarea>
+          </label>
+          <div class="chips small" id="lyric-ideas"></div>
+          <p id="lyrics-error" class="error" role="alert" hidden></p>
+          <button type="submit" class="primary" id="lyrics-btn"><span class="btn-label">✍️ Write lyrics</span></button>
+        </form>
+        <div id="lyrics-results" class="lyrics-results"></div>
+      </div>
+
+      <!-- REMIX -->
+      <div class="panel" id="panel-remix" role="tabpanel" aria-labelledby="tab-remix" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Remix your own audio</h2>
+            <p class="muted">Upload a recording (or paste a public link) and let Suno transform it. Tracks from your Library can also be remixed from their ⋯ menu.</p>
+          </div>
+        </div>
+        <div class="tool-grid" id="remix-tools" role="radiogroup" aria-label="Remix tool"></div>
+        <form id="remix-form" class="card" novalidate>
+          <h3 id="remix-title"></h3>
+          <p class="muted" id="remix-desc"></p>
+          <div id="remix-fields"></div>
+          <p id="remix-error" class="error" role="alert" hidden></p>
+          <button type="submit" class="primary" id="remix-btn"><span class="btn-label">Start</span></button>
+        </form>
+      </div>
+
+      <!-- SOUNDS -->
+      <div class="panel" id="panel-sounds" role="tabpanel" aria-labelledby="tab-sounds" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Sound &amp; loop generator</h2>
+            <p class="muted">Make short sounds, loops and one-shots — set tempo and key for beat-making.</p>
+          </div>
+        </div>
+        <form id="sounds-form" class="card" novalidate>
+          <div id="sounds-fields"></div>
+          <p id="sounds-error" class="error" role="alert" hidden></p>
+          <button type="submit" class="primary" id="sounds-btn"><span class="btn-label">🥁 Generate sound</span></button>
+        </form>
+      </div>
+
+      <!-- LIBRARY -->
+      <div class="panel" id="panel-library" role="tabpanel" aria-labelledby="tab-library" hidden>
+        <div class="panel-head">
+          <div>
+            <h2>Your library</h2>
+            <p class="muted">Stored in this browser. Suno keeps audio files for 14 days.</p>
+          </div>
+          <div class="row gap wrap">
+            <input type="search" id="lib-search" placeholder="Search songs…" aria-label="Search library" />
+            <select id="lib-filter" aria-label="Filter">
+              <option value="all">All</option>
+              <option value="fav">★ Favourites</option>
+            </select>
+          </div>
+        </div>
+        <div id="jobs" class="jobs" aria-live="polite"></div>
+        <div id="library" class="library"></div>
+        <div id="lib-empty" class="empty" hidden>
+          <div class="eq big" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <h3>Nothing here yet</h3>
+          <p class="muted">Your first masterpiece is one idea away.</p>
+          <button type="button" class="primary" data-go="create">✨ Create a song</button>
         </div>
       </div>
-      <div class="current-main">
-        <div id="cur-icon" class="big-icon" aria-hidden="true"></div>
-        <div>
-          <div id="cur-temp" class="big-temp"></div>
-          <div id="cur-desc" class="desc"></div>
-          <div id="cur-feels" class="muted"></div>
-        </div>
-      </div>
-      <dl class="stats">
-        <div><dt>Humidity</dt><dd id="cur-humidity"></dd></div>
-        <div><dt>Wind</dt><dd id="cur-wind"></dd></div>
-        <div><dt>Precip.</dt><dd id="cur-precip"></dd></div>
-        <div><dt>UV index</dt><dd id="cur-uv"></dd></div>
-        <div><dt>Sunrise</dt><dd id="cur-sunrise"></dd></div>
-        <div><dt>Sunset</dt><dd id="cur-sunset"></dd></div>
-      </dl>
-      <p id="updated" class="muted small"></p>
-    </section>
-
-    <section id="hourly-wrap" class="card" hidden>
-      <h3>Next 24 hours</h3>
-      <div id="hourly" class="hourly"></div>
-    </section>
-
-    <section id="daily-wrap" class="card" hidden>
-      <h3>7-day forecast</h3>
-      <ul id="daily" class="daily"></ul>
     </section>
   </main>
 
-  <footer class="footer">
-    Built by Angela Arrigone · FAU · Weather data by
-    <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>
+  <!-- ============ PLAYER ============ -->
+  <div class="player" id="player" hidden>
+    <div class="player-karaoke" id="karaoke" hidden aria-live="off"></div>
+    <div class="player-inner">
+      <img id="p-art" class="p-art" alt="" />
+      <div class="p-meta">
+        <div class="p-title" id="p-title">—</div>
+        <div class="p-sub" id="p-sub"></div>
+      </div>
+      <div class="p-controls">
+        <button type="button" class="icon-btn" id="p-prev" aria-label="Previous">⏮</button>
+        <button type="button" class="play-btn" id="p-play" aria-label="Play">▶</button>
+        <button type="button" class="icon-btn" id="p-next" aria-label="Next">⏭</button>
+      </div>
+      <div class="p-seek">
+        <span id="p-cur">0:00</span>
+        <input type="range" id="p-bar" min="0" max="100" step="0.1" value="0" aria-label="Seek" />
+        <span id="p-dur">0:00</span>
+      </div>
+      <button type="button" class="icon-btn" id="p-lyrics" aria-pressed="false" title="Karaoke lyrics" aria-label="Toggle synced lyrics">🎤</button>
+    </div>
+    <audio id="audio" preload="none"></audio>
+  </div>
+
+  <!-- ============ DIALOG ============ -->
+  <dialog id="dlg" class="dlg">
+    <form method="dialog" id="dlg-form" novalidate>
+      <header class="dlg-head">
+        <h3 id="dlg-title"></h3>
+        <button type="button" class="icon-btn" id="dlg-close" aria-label="Close">✕</button>
+      </header>
+      <div id="dlg-body" class="dlg-body"></div>
+      <p id="dlg-error" class="error" role="alert" hidden></p>
+      <footer class="dlg-foot" id="dlg-foot">
+        <button type="button" class="ghost" id="dlg-cancel">Cancel</button>
+        <button type="submit" class="primary" id="dlg-ok"><span class="btn-label">Go</span></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <footer class="foot">
+    <p>Built by Angela Arrigone · FAU · Powered by the <a href="https://docs.sunoapi.org/" target="_blank" rel="noopener">Suno API</a> · <a href="weather/">Owl Weather</a></p>
   </footer>
 
   <script src="app.js"></script>
